@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QCanBus>
 
 class SavvyCANApplication : public QApplication
 {
@@ -30,10 +31,53 @@ int main(int argc, char *argv[])
     //qSetMessagePattern("Type: %{type}\nProduct Name: %{appname}\nFile: %{file}\nLine: %{line}\nMethod: %{function}\nThreadID: %{threadid}\nThreadPtr: %{qthreadptr}\nMessage: %{message}");
 #endif
 
+    //static CandleLightCanBusPlugin plugin;
+    //Q_UNUSED(plugin);
+
     SavvyCANApplication a(argc, argv);
 
-    //Add a local path for Qt extensions, to allow for per-application extensions.
     a.addLibraryPath("plugins");
+
+    // Explicitly set the plugin path
+    QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/plugins");
+
+    QPalette palette = a.palette();
+    QColor highlightColor(80, 100, 140);  // A more subtle blue
+
+    palette.setColor(QPalette::Highlight, highlightColor);
+
+    // Apply the modified palette
+    a.setPalette(palette);
+
+    a.setStyleSheet(R"(
+    /* Customize highlight colors */
+    QWidget {
+        selection-background-color: #78809c;
+    }
+
+    /* Remove the padding/highlighting around table cells */
+    QTableView {
+        gridline-color: #d0d0d0;
+        outline: 0;  /* Removes the focus border */
+    }
+
+    QTableView::item {
+        border: 0px;
+        padding: 0px;
+    }
+
+    /* Remove the highlight padding */
+    QTableView::item:selected {
+        border: 0px;
+        background-color: #78809c;
+    }
+
+    /* Remove focus border/padding */
+    QTableView::item:focus {
+        border: 0px;
+        outline: none;
+    }
+)");
 
     //These things are used by QSettings to set up setting storage
     a.setOrganizationName("EVTV");
