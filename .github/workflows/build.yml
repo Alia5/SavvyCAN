@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - "QT6WIP"      
+      - "mine"      
 jobs:
   buildlinux:
     name: Linux x64
@@ -123,6 +123,13 @@ jobs:
 
           qmake CONFIG+=release SavvyCAN.pro
           nmake /C
+      - name: Compile_Plugin
+        shell: cmd
+        run: | 
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+
+          qmake CONFIG+=release connections/candleLight/qtcandlelightcanbus.pro
+          nmake /C
 
       - name: Package
         run: |
@@ -151,6 +158,7 @@ jobs:
           copy "${Env:QT_ROOT_DIR}/plugins/styles/*.*" package/styles/
           mkdir package/canbus
           copy "${Env:QT_ROOT_DIR}/plugins/canbus/*.*" package/canbus/
+          copy "release/qtcandlelightcanbus.dll" package/canbus/
 
       - uses: actions/upload-artifact@v4
         with:
@@ -181,29 +189,3 @@ jobs:
             SavvyCAN-macOS_x64.dmg/SavvyCAN_x64.dmg
             SavvyCAN-macOS_ARM64.dmg/SavvyCAN_arm64.dmg
           
-  notify:
-    name: Notify Discord
-    runs-on: ubuntu-latest
-    needs: [buildwindows, buildmacos86, buildmacos-arm64, buildlinux]
-    steps:
-      - id: msg_var
-        name: remove newlines
-        run: |
-          export release_msg=$(cat << EOF
-          ${{ github.event.head_commit.message }} 
-          EOF
-          )
-          release_msg="${release_msg//$'\n'/'-'}"
-          release_msg="${release_msg//$'\r'/'-'}"
-          release_msg="${release_msg//$'('/'-'}"
-          release_msg="${release_msg//$')'/'-'}"
-          echo $release_msg
-          echo "::set-output name=msg::$release_msg"
-                                                                  
-      - name: Notify Discord
-        run: |
-          curl -i -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -X POST \
-          --data "{\"content\": null,\"embeds\": [{\"title\": \"${{ github.repository }} QT6 Build Complete\",      \"description\": \"${{ steps.msg_var.outputs.msg }} \\nCommit: ${{ github.sha }}\\n[Build Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)\",      \"color\": 5131997,      \"author\": {        \"name\": \"Github Builds\"      }    }  ]}" \
-          https://discord.com/api/webhooks/${{ secrets.WEBHOOK_ID }}/${{ secrets.WEBHOOK_TOKEN }}
