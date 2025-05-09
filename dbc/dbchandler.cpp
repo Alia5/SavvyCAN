@@ -464,11 +464,6 @@ DBC_SIGNAL* DBCFile::parseSignalLine(QString line, DBC_MESSAGE *msg)
 
     sig = new DBC_SIGNAL();
 
-    sig->multiplexLowValue = 0;
-    sig->multiplexHighValue = 0;
-    sig->isMultiplexed = false;
-    sig->isMultiplexor = false;
-
     qDebug() << "Found a SG line";
     regex.setPattern("^SG\\_ *([-\\w]+) +M *: *(\\d+)\\|(\\d+)@(\\d+)([\\+|\\-]) \\(([0-9.+\\-eE]+),([0-9.+\\-eE]+)\\) \\[([0-9.+\\-eE]+)\\|([0-9.+\\-eE]+)\\] \\\"(.*)\\\" (.*)");
 
